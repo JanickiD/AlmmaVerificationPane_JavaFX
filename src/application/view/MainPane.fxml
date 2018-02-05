@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller.MainPaneController">
+   <children>
+      <TableView fx:id="tbl_notVerified" layoutX="36.0" layoutY="49.0" prefHeight="200.0" prefWidth="553.0">
+        <columns>
+          <TableColumn fx:id="col_nv_id" prefWidth="30.0" text="ID" />
+          <TableColumn fx:id="col_nv_name" prefWidth="108.0" text="IMIĘ" />
+            <TableColumn fx:id="col_nv_lastName" prefWidth="156.0" text="NAZWISKO" />
+            <TableColumn fx:id="col_nv_weight" prefWidth="64.0" text="WAGA" />
+            <TableColumn fx:id="col_nv_club" prefWidth="194.0" text="KLUB" />
+        </columns>
+      </TableView>
+      <TableView fx:id="tbl_verified" layoutX="36.0" layoutY="364.0" prefHeight="200.0" prefWidth="553.0">
+         <columns>
+            <TableColumn fx:id="col_v_id" prefWidth="30.0" text="ID" />
+            <TableColumn fx:id="col_v_name" prefWidth="108.0" text="IMIĘ" />
+            <TableColumn fx:id="col_v_lastName" prefWidth="156.0" text="NAZWISKO" />
+            <TableColumn fx:id="col_v_weight" prefWidth="64.0" text="WAGA" />
+            <TableColumn fx:id="col_v_club" prefWidth="194.0" text="KLUB" />
+         </columns>
+      </TableView>
+      <TextField fx:id="tf_find" layoutX="36.0" layoutY="277.0" prefHeight="29.0" prefWidth="187.0" promptText="Wyszukaj nazwisko" />
+      <Button fx:id="bnt_find" layoutX="115.0" layoutY="315.0" mnemonicParsing="false" onMouseClicked="#findPlayer" prefHeight="25.0" prefWidth="108.0" text="Szukaj" />
+      <Button fx:id="btn_clean" layoutX="36.0" layoutY="315.0" mnemonicParsing="false" onMouseClicked="#clear_tf_Find" prefHeight="25.0" prefWidth="65.0" text="Wyczyść" />
+      <TableView fx:id="tbl_showDivisions" layoutX="599.0" layoutY="49.0" prefHeight="94.0" prefWidth="180.0">
+        <columns>
+          <TableColumn fx:id="col_division" prefWidth="179.0" text="Formuły w których startuje" />
+        </columns>
+      </TableView>
+      <Button fx:id="btn_editDivisions" layoutX="599.0" layoutY="149.0" mnemonicParsing="false" onMouseClicked="#editDivisions" prefHeight="25.0" prefWidth="180.0" text="Edytuj formuły" />
+      <Button fx:id="btn_verified" layoutX="599.0" layoutY="186.0" mnemonicParsing="false" onMouseClicked="#verify" prefHeight="63.0" prefWidth="180.0" text="Zweryfikowany!" />
+      <Button fx:id="btn_addPlayer" layoutX="481.0" layoutY="275.0" mnemonicParsing="false" onMouseClicked="#addPlayer" prefHeight="63.0" prefWidth="108.0" text="Dodaj zawodnika" />
+      <Button fx:id="btn_refresh" layoutX="238.0" layoutY="277.0" mnemonicParsing="false" onMouseClicked="#refresh_main_pane" prefHeight="29.0" prefWidth="227.0" text="Odśwież okno" />
+      <ProgressBar fx:id="progress_bar" layoutX="36.0" layoutY="568.0" prefHeight="18.0" prefWidth="730.0" progress="0.0" />
+      <Label layoutX="299.0" layoutY="32.0" text="Zawodnicy niezweryfikowani" />
+      <Label layoutX="307.0" layoutY="347.0" text="Zawodnicy zweryfikowani" />
+      <Button fx:id="btn_quit" layoutX="621.0" layoutY="516.0" mnemonicParsing="false" onMouseClicked="#quit" prefHeight="25.0" prefWidth="143.0" text="Zamknij program" />
+   </children>
+</AnchorPane>
