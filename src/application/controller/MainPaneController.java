@@ -150,6 +150,7 @@ public class MainPaneController {
 			while(rs.next()) {
 				notVerifiedPlayers.add(new Zawodnik(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5)));
 			}
+			notVerifiedPlayers.forEach(System.out::println);
 			
 			col_nv_id.setCellValueFactory(new PropertyValueFactory<Zawodnik, Integer>("id"));
 			col_nv_name.setCellValueFactory(new PropertyValueFactory<Zawodnik, String>("name"));
@@ -191,10 +192,11 @@ public class MainPaneController {
 			ps.setString(2, id.toString());
 			ps.executeUpdate();
 			
+			refresh_main_pane(event);
 			
 			showVerifiedPlayers(conn);
 			
-			refresh_main_pane(event);
+			
 			
 			
 			
@@ -235,8 +237,7 @@ public class MainPaneController {
 	
     public void initialize() throws SQLException {
     	db = new DBConnector();
-    	refresh_main_pane(null);
-    	showVerifiedPlayers(db.connection());
+ 
     }
 
 }

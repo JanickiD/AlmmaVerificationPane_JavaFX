@@ -25,11 +25,11 @@ public class Zawodnik {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	public String getWeght() {
+	public String getWeight() {
 		return weight;
 	}
-	public void setWeght(String weght) {
-		this.weight = weght;
+	public void setWeight(String weight) {
+		this.weight = weight;
 	}
 	public String getClub() {
 		return club;
