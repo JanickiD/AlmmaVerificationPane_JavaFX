@@ -5,27 +5,29 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import application.database.DBConnector;
-import application.model.Club;
 import application.model.Division;
 import application.model.Zawodnik;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.ComboBoxTableCell;
@@ -36,6 +38,9 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class MainPaneController {
+
+	@FXML
+	private Button btn_deleteDivision;
 
 	@FXML
 	private TableView<Zawodnik> tbl_notVerified;
@@ -91,7 +96,7 @@ public class MainPaneController {
 	private TableColumn<Division, String> col_division;
 
 	@FXML
-	private Button btn_editDivisions;
+	private Button btn_addDivision;
 
 	@FXML
 	private Button btn_verified;
@@ -107,6 +112,80 @@ public class MainPaneController {
 
 	@FXML
 	private Button btn_quit;
+
+	@FXML
+	void addDivision(MouseEvent event) {
+		Connection connection = null;
+		
+		try {
+			connection = db.connection();
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO category_has_player (player_id_p, category_id_cat) VALUES (?, ?);");
+			ps.setString(1, id.toString());
+			ps.setInt(2, 1);
+			ps.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			showDivision();
+			if(connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@FXML
+	void deleteDivision(MouseEvent event) {
+
+		
+		System.out.println(cellData);
+		
+					
+			Connection connection = null;
+			
+			try {
+				connection = db.connection();
+				
+			
+				//pobranie wartoœci zaznaczonej komórki z col_division
+				String cellData = col_division.getCellData(division.get(0));
+				//ustalenie id_cat na podstawie name_cat z cellData
+				String oldId_catValue = oldId_catValue(cellData, connection);
+				
+
+				// kasowanie wiersza
+				Statement cs = connection.createStatement();
+				cs.executeQuery("set foreign_key_checks = 0; ");
+				
+				PreparedStatement ps = connection.prepareStatement("DELETE FROM category_has_player WHERE player_id_p=? and category_id_cat=?;");
+				ps.setString(1, id.toString());
+				ps.setString(2, oldId_catValue);
+				
+				System.out.println(ps.toString());
+				ps.executeUpdate();
+				
+				
+				
+				showDivision();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			} finally {
+				if(connection != null) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+		
+	
+	}
 
 	// obiekt przechowuj¹cy stage dla scen "dodaj zawodnika"
 	private static Stage stage;
@@ -137,10 +216,6 @@ public class MainPaneController {
 		tf_find.setText(null);
 	}
 
-	@FXML
-	void editDivisions(MouseEvent event) {
-
-	}
 
 	@FXML
 	void findPlayer(MouseEvent event) {
@@ -331,6 +406,7 @@ public class MainPaneController {
 		showVerifiedPlayers();
 		show_notVerified_Players();
 		tbl_notVerified.setEditable(true);
+		col_division.setEditable(true);
 		editCalls();
 
 	}
@@ -347,6 +423,9 @@ public class MainPaneController {
 
 		// edycja kolumny club
 		editClubCell();
+
+		// edycja dywizji
+		editDivisionCell();
 	}
 
 	private void editNameCell() {
@@ -520,10 +599,128 @@ public class MainPaneController {
 				try {
 					connection.close();
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
 	}
+
+	private ObservableList<String> getDivisions() {
+		ObservableList<String> divisions = FXCollections.observableArrayList();
+		Connection connection = null;
+		try {
+			connection = db.connection();
+			PreparedStatement ps = connection.prepareStatement("SELECT name_cat FROM category;");
+			ResultSet rs = ps.executeQuery();
+
+			while (rs.next()) {
+				divisions.add(rs.getString(1));
+			}
+
+		} catch (SQLException e) {
+
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return divisions;
+	}
+
+	private void editDivisionCell() {
+
+		// pobiera z bazy danych listê dostêpnych formu³ w których mog¹ startowaæ
+		// zawodnicy
+		ObservableList<String> divisions = FXCollections.observableArrayList();
+		divisions = getDivisions();
+
+		col_division.setCellValueFactory(
+				new Callback<TableColumn.CellDataFeatures<Division, String>, ObservableValue<String>>() {
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<Division, String> param) {
+						Division value = param.getValue();
+						String division2 = value.getDivision();
+						return new SimpleObjectProperty<String>(division2);
+					}
+				});
+
+		// ustawienie comboBox w komóre tabeli
+		col_division.setCellFactory(ComboBoxTableCell.forTableColumn(divisions));
+		// edycja komórki tabeli
+		col_division.setOnEditCommit((CellEditEvent<Division, String> ev) -> {
+			TablePosition<Division, String> tablePosition = ev.getTablePosition();
+			String newValue = ev.getNewValue();
+			int row = tablePosition.getRow();
+			Division division2 = ev.getTableView().getItems().get(row);
+			String oldValue = col_division.getCellData(division2);
+			division2.setDivision(newValue);
+
+			///// update komórki w tabeli
+
+			Connection connection = null;
+			try {
+				connection = db.connection();
+
+				// zmienna przechowuj¹ca "stary" id_cat edytowanej komórki
+				String oldCategory_id = oldId_catValue(oldValue, connection);
+
+				// zmienna przechowujaca "nowy" id_cat edytowanej komórki
+				String newCategory_id = null;
+				PreparedStatement newCategoryIdPs = connection
+						.prepareStatement("SELECT id_cat FROM category WHERE name_cat =?");
+				newCategoryIdPs.setString(1, division2.getDivision());
+				ResultSet categoryIdRs = newCategoryIdPs.executeQuery();
+
+				if (categoryIdRs.next()) {
+					newCategory_id = categoryIdRs.getString(1);
+				}
+
+				// update zawartoœci komórki
+				PreparedStatement ps = connection.prepareStatement(
+						"UPDATE category_has_player SET player_id_p=?, category_id_cat = ? WHERE player_id_p=? AND category_id_cat = ? ");
+				ps.setString(1, id.toString());
+				ps.setString(2, newCategory_id);
+				ps.setString(3, id.toString());
+				ps.setString(4, oldCategory_id);
+
+				ps.executeUpdate();
+
+			} catch (SQLException e) {
+				// alert na wypadek b³êdu aktualizacji komórki
+				Alert error = new Alert(AlertType.ERROR);
+				error.setHeaderText("B³¹d!");
+				error.setContentText(e.getMessage());
+				error.setTitle("SQL ERROR");
+				error.showAndWait();
+				e.printStackTrace();
+			} finally {
+				if (connection != null) {
+					try {
+						connection.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+
+	}
+
+	private String oldId_catValue(String oldValue, Connection connection) throws SQLException {
+		String oldCategory_id = null;
+		PreparedStatement oldCategoryIdPs = connection
+				.prepareStatement("SELECT id_cat FROM category WHERE name_cat =?");
+		oldCategoryIdPs.setString(1, oldValue);
+		ResultSet oldCategoryIdRs = oldCategoryIdPs.executeQuery();
+
+		if (oldCategoryIdRs.next()) {
+			oldCategory_id = oldCategoryIdRs.getString(1);
+		}
+		return oldCategory_id;
+	}
+
 }
