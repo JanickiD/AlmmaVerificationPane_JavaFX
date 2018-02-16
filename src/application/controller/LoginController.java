@@ -6,17 +6,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import application.Main;
 import application.database.DBConnector;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
@@ -36,7 +38,16 @@ public class LoginController {
 
     @FXML
     void close(MouseEvent event) {
+    	Runtime.getRuntime().exit(1);
+    }
+    
+   
+    @FXML
+    void doLogin(KeyEvent event) throws SQLException, IOException {
 
+    	if(event.getCode().equals(KeyCode.ENTER)) {
+    		doLogin();
+    	}
     }
 
     
@@ -46,7 +57,14 @@ public class LoginController {
     
     @FXML
     void login(MouseEvent event) throws SQLException, IOException {
-    	Connection con = db.connection();
+    	doLogin();
+
+
+    }
+
+
+	private void doLogin() throws SQLException, IOException {
+		Connection con = db.connection();
     	String sql = "SELECT user_group FROM user where login=? and pass=?;";
     	PreparedStatement ps = con.prepareStatement(sql);
     	ps.setString(1, tf_login.getText());
@@ -57,14 +75,13 @@ public class LoginController {
     		user_group = rs.getString("user_group");
     		login = tf_login.getText();
     		
-    		Stage stage = new Stage();
+    		Stage stage = Main.getPrimaryStage();
     		Parent parent = FXMLLoader.load(getClass().getResource("/application/view/MainPane.fxml"));
     		Scene scene = new Scene(parent);
     		stage.setScene(scene);
     		stage.setTitle("Weryfikacja zawodników");
     		stage.show();
-    		
-    		((Node)event.getSource()).getScene().getWindow().hide();
+    		Main.getPrimaryStage().setScene(scene);
     		
     	if (con != null) {
     		con.close();
@@ -78,9 +95,7 @@ public class LoginController {
     		error.setTitle("Nale¿y podaæ poprawne dane logowania");
     		error.showAndWait();
     	}
-
-
-    }
+	}
 
 
     public void initialize() {

@@ -211,7 +211,51 @@ public class MainPaneController {
 
 	@FXML
 	void findPlayer(MouseEvent event) {
+		String lastName = tf_find.getText();
+		System.out.println(lastName);
+		ObservableList<Zawodnik> niezweryfikowanieZawodnicyONazwisku = FXCollections.observableArrayList();
+		ObservableList<Zawodnik> zweryfikowanieZawodnicyONazwisku = FXCollections.observableArrayList();
 
+		Connection connection = null;
+
+		try {
+			connection = db.connection();
+			// wyszukanie wszystkich niezweryfkiw
+			PreparedStatement ps = connection.prepareStatement(
+					"select p.id_p, p.name_p, p.last_name_p, w.value_weight, c.name_club, p.verified from player as p join weight_cat as w on p.id_weight = w.id_weight join club as c on p.id_club = c.id_club WHERE p.last_name_p = ?;");
+			ps.setString(1, lastName);
+			ResultSet rs1 = ps.executeQuery();
+
+			while (rs1.next()) {
+
+				if ("0".equals(rs1.getString(6))) {
+					niezweryfikowanieZawodnicyONazwisku.add(new Zawodnik(rs1.getInt(1), rs1.getString(2),
+							rs1.getString(3), rs1.getString(4), rs1.getString(5), rs1.getString(6)));
+				}
+
+				if ("1".equals(rs1.getString(6))) {
+					zweryfikowanieZawodnicyONazwisku.add(new Zawodnik(rs1.getInt(1), rs1.getString(2), rs1.getString(3),
+							rs1.getString(4), rs1.getString(5), rs1.getString(6)));
+				}
+
+			}
+
+			tbl_notVerified.setItems(null);
+			tbl_notVerified.setItems(niezweryfikowanieZawodnicyONazwisku);
+			tbl_verified.setItems(null);
+			tbl_verified.setItems(zweryfikowanieZawodnicyONazwisku);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	// akcja na przycisku "zamknij program"
@@ -364,7 +408,6 @@ public class MainPaneController {
 			}
 
 			col_division.setCellValueFactory(new PropertyValueFactory<Division, String>("division"));
-
 			tbl_showDivisions.setItems(null);
 			tbl_showDivisions.setItems(division);
 
@@ -385,7 +428,7 @@ public class MainPaneController {
 	void getSelectedPlayerID(MouseEvent event) {
 		id = null;
 		TableView<Zawodnik> source = (TableView<Zawodnik>) event.getSource();
-		if ("tbl_notVerified".equals(source.getId())) {
+		if ("tbl_notVerified".equals(source.getId().toString())) {
 			id = tbl_notVerified.getSelectionModel().getSelectedItem().getId();
 		} else {
 			id = tbl_verified.getSelectionModel().getSelectedItem().getId();
@@ -557,7 +600,7 @@ public class MainPaneController {
 
 			// pobranie id wagi
 			String value_weight = selectedItem.getWeight();
-			
+
 			String weight_id = getID_weight(connection, value_weight);
 
 			PreparedStatement clubPS = connection.prepareStatement("SELECT id_club FROM club WHERE name_club = ?");
@@ -693,7 +736,7 @@ public class MainPaneController {
 				// alert na wypadek b³êdu aktualizacji komórki
 				alertSQLError(e);
 				// zabezpiecza przed b³êdem kiedy komórka powraca do wartoœci przed zmian¹
-				division2.setDivision(oldValue); 
+				division2.setDivision(oldValue);
 			} finally {
 				if (connection != null) {
 					try {

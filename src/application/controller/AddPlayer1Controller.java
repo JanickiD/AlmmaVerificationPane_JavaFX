@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
 public class AddPlayer1Controller {
 	DBConnector db;
@@ -46,7 +47,8 @@ public class AddPlayer1Controller {
 
 	@FXML
 	void closePane(MouseEvent event) {
-
+		Stage window = (Stage) btn_cancel.getScene().getWindow();
+		window.close();
 }
 
 	@FXML

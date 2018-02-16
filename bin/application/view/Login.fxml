@@ -11,7 +11,7 @@
       <Label layoutX="135.0" layoutY="108.0" text="Hasło" />
       <Label layoutX="135.0" layoutY="42.0" text="Login" />
       <TextField fx:id="tf_login" layoutX="48.0" layoutY="59.0" prefHeight="29.0" prefWidth="204.0" />
-      <PasswordField fx:id="pf_pass" layoutX="48.0" layoutY="128.0" prefHeight="29.0" prefWidth="204.0" />
+      <PasswordField fx:id="pf_pass" layoutX="48.0" layoutY="128.0" onKeyPressed="#doLogin" prefHeight="29.0" prefWidth="204.0" />
       <Button fx:id="btn_login" layoutX="166.0" layoutY="176.0" mnemonicParsing="false" onMouseClicked="#login" prefHeight="25.0" prefWidth="90.0" text="Zaloguj" />
       <Button fx:id="btn_close" layoutX="47.0" layoutY="176.0" mnemonicParsing="false" onMouseClicked="#close" text="Wyjdź" />
    </children>

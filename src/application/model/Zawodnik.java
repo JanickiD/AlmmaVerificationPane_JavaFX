@@ -7,8 +7,16 @@ public class Zawodnik {
 	private String lastName;
 	private String weight;
 	private String club;
+	private String verified;
+	
 	public Integer getId() {
 		return id;
+	}
+	public String getVerified() {
+		return verified;
+	}
+	public void setVerified(String verified) {
+		this.verified = verified;
 	}
 	public void setId(Integer id) {
 		this.id = id;
@@ -46,13 +54,26 @@ public class Zawodnik {
 		this.weight = weight;
 		this.club = club;
 	}
+	
+	
+	public Zawodnik(Integer id, String name, String lastName, String weight, String club, String verified) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.lastName = lastName;
+		this.weight = weight;
+		this.club = club;
+		this.verified = verified;
+	}
 	public Zawodnik() {
 		super();
 	}
 	@Override
 	public String toString() {
-		return "Zawodnik [id=" + id + ", name=" + name + ", lastName=" + lastName + ", weght=" + weight + ", club="
-				+ club + "]";
+		return "Zawodnik [" + (id != null ? "id=" + id + ", " : "") + (name != null ? "name=" + name + ", " : "")
+				+ (lastName != null ? "lastName=" + lastName + ", " : "")
+				+ (weight != null ? "weight=" + weight + ", " : "") + (club != null ? "club=" + club + ", " : "")
+				+ (verified != null ? "verified=" + verified : "") + "]";
 	}
 	
 	
