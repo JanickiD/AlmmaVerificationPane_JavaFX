@@ -10,7 +10,6 @@ import java.sql.Statement;
 import application.database.DBConnector;
 import application.model.Division;
 import application.model.Zawodnik;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -116,19 +115,20 @@ public class MainPaneController {
 	@FXML
 	void addDivision(MouseEvent event) {
 		Connection connection = null;
-		
+
 		try {
 			connection = db.connection();
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO category_has_player (player_id_p, category_id_cat) VALUES (?, ?);");
+			PreparedStatement ps = connection
+					.prepareStatement("INSERT INTO category_has_player (player_id_p, category_id_cat) VALUES (?, ?);");
 			ps.setString(1, id.toString());
 			ps.setInt(2, 1);
 			ps.executeUpdate();
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			showDivision();
-			if(connection != null) {
+			if (connection != null) {
 				try {
 					connection.close();
 				} catch (SQLException e) {
@@ -140,51 +140,44 @@ public class MainPaneController {
 
 	@FXML
 	void deleteDivision(MouseEvent event) {
+		Connection connection = null;
 
-		
-		System.out.println(cellData);
-		
-					
-			Connection connection = null;
-			
-			try {
-				connection = db.connection();
-				
-			
-				//pobranie wartoœci zaznaczonej komórki z col_division
-				String cellData = col_division.getCellData(division.get(0));
-				//ustalenie id_cat na podstawie name_cat z cellData
-				String oldId_catValue = oldId_catValue(cellData, connection);
-				
+		try {
+			connection = db.connection();
 
-				// kasowanie wiersza
-				Statement cs = connection.createStatement();
-				cs.executeQuery("set foreign_key_checks = 0; ");
-				
-				PreparedStatement ps = connection.prepareStatement("DELETE FROM category_has_player WHERE player_id_p=? and category_id_cat=?;");
-				ps.setString(1, id.toString());
-				ps.setString(2, oldId_catValue);
-				
-				System.out.println(ps.toString());
-				ps.executeUpdate();
-				
-				
-				
-				showDivision();
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} finally {
-				if(connection != null) {
-					try {
-						connection.close();
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
+			// pobranie wartoœci zaznaczonej komórki z col_division
+			String cellData = col_division.getCellData(division.get(0));
+			// ustalenie id_cat na podstawie name_cat z cellData
+			String oldId_catValue = oldId_catValue(cellData, connection);
+
+			// kasowanie wiersza
+			Statement cs = connection.createStatement();
+			cs.executeQuery("set foreign_key_checks = 0; ");
+
+			PreparedStatement ps = connection
+					.prepareStatement("DELETE FROM category_has_player WHERE player_id_p=? and category_id_cat=?;");
+			ps.setString(1, id.toString());
+			ps.setString(2, oldId_catValue);
+
+			System.out.println(ps.toString());
+			ps.executeUpdate();
+
+			showDivision();
+
+		} catch (SQLException e) {
+			alertSQLError(e);
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-			};
-		
-	
+			}
+		}
+		;
+
 	}
 
 	// obiekt przechowuj¹cy stage dla scen "dodaj zawodnika"
@@ -215,7 +208,6 @@ public class MainPaneController {
 	void clear_tf_Find(MouseEvent event) {
 		tf_find.setText(null);
 	}
-
 
 	@FXML
 	void findPlayer(MouseEvent event) {
@@ -564,14 +556,9 @@ public class MainPaneController {
 			connection = db.connection();
 
 			// pobranie id wagi
-			PreparedStatement weightPS = connection
-					.prepareStatement("SELECT id_weight from weight_cat WHERE value_weight = ?");
-			weightPS.setString(1, selectedItem.getWeight());
-			ResultSet weightRs = weightPS.executeQuery();
-			String weight_id = null;
-			if (weightRs.next()) {
-				weight_id = weightRs.getString(1);
-			}
+			String value_weight = selectedItem.getWeight();
+			
+			String weight_id = getID_weight(connection, value_weight);
 
 			PreparedStatement clubPS = connection.prepareStatement("SELECT id_club FROM club WHERE name_club = ?");
 			clubPS.setString(1, selectedItem.getClub());
@@ -593,6 +580,7 @@ public class MainPaneController {
 			mainPS.executeUpdate();
 
 		} catch (SQLException e) {
+			alertSQLError(e);
 			e.printStackTrace();
 		} finally {
 			if (connection != null) {
@@ -603,6 +591,18 @@ public class MainPaneController {
 				}
 			}
 		}
+	}
+
+	public static String getID_weight(Connection connection, String value_weight) throws SQLException {
+		PreparedStatement weightPS = connection
+				.prepareStatement("SELECT id_weight from weight_cat WHERE value_weight = ?");
+		weightPS.setString(1, value_weight);
+		ResultSet weightRs = weightPS.executeQuery();
+		String weight_id = null;
+		if (weightRs.next()) {
+			weight_id = weightRs.getString(1);
+		}
+		return weight_id;
 	}
 
 	private ObservableList<String> getDivisions() {
@@ -691,12 +691,9 @@ public class MainPaneController {
 
 			} catch (SQLException e) {
 				// alert na wypadek b³êdu aktualizacji komórki
-				Alert error = new Alert(AlertType.ERROR);
-				error.setHeaderText("B³¹d!");
-				error.setContentText(e.getMessage());
-				error.setTitle("SQL ERROR");
-				error.showAndWait();
-				e.printStackTrace();
+				alertSQLError(e);
+				// zabezpiecza przed b³êdem kiedy komórka powraca do wartoœci przed zmian¹
+				division2.setDivision(oldValue); 
 			} finally {
 				if (connection != null) {
 					try {
@@ -708,6 +705,19 @@ public class MainPaneController {
 			}
 		});
 
+	}
+
+	private void alertSQLError(SQLException e) {
+		Alert error = new Alert(AlertType.ERROR);
+		error.setHeaderText("B³¹d!");
+		if (e.getMessage().toString().startsWith("Duplicate entry")) {
+			error.setContentText("Zawodnik startuje ju¿ tej kategorii!");
+		} else {
+			error.setContentText(e.getMessage());
+		}
+
+		error.setTitle("B³¹d bazy danych!");
+		error.showAndWait();
 	}
 
 	private String oldId_catValue(String oldValue, Connection connection) throws SQLException {
